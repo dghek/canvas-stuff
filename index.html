@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html manifest="">
+
+<HEAD>
+    <meta charset="UTF-8">
+    <link rel='stylesheet' type='text/css' href='app.css'/>
+
+    <script type="text/javascript">
+        function placeDot(ctx, centerX, centerY, radius)  {
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
+            ctx.fillStyle = 'blue';
+            ctx.fill();
+            ctx.lineWidth =10;
+            ctx.strokeStyle = 'blue';
+            ctx.stroke();
+        }
+
+        function drawLine (ctx, fromX, fromY, toX, toY)  {
+            ctx.lineWidth=2;
+            ctx.beginPath();
+            ctx.moveTo(fromX, fromY);
+            ctx.lineTo(toX, toY);
+            ctx.strokeStyle = 'blue';
+            ctx.stroke();
+        }
+
+        function drawCircle  (ctx, centerX, centerY, circleRadius, color) {
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, circleRadius, 0, (2 * Math.PI),false);
+            ctx.strokeStyle = color;
+            ctx.stroke();
+        }
+        function writeText (ctx, x, y, text) {
+            ctx.font = "30px Comic Sans MS";
+            ctx.fillStyle = '#FF00FF';
+            ctx.fillText(text,x, y);
+        }
+    </script>
+
+    <script type="text/javascript">
+        window.onload = function () {
+            var canvas = document.getElementById('canvas');
+            var ctx = canvas.getContext('2d');
+            var centerX = canvas.width / 2;
+            var centerY = canvas.height / 2;
+            var dotRadius = 3;
+            var numOfDots = 8;
+            var circleRadius = 150;
+
+            // show the center dot
+            placeDot(ctx, centerX, centerY, dotRadius);
+
+            // add numOfDots dots around the circle
+            for(var i = 0; i < numOfDots; i++) {
+                var x = Math.round(centerX + circleRadius * Math.cos(2 * Math.PI * i / numOfDots));
+                var y = Math.round(centerY + circleRadius * Math.sin(2 * Math.PI * i / numOfDots));
+                placeDot(ctx, x, y, dotRadius);
+                drawLine(ctx, centerX, centerY, x, y);
+            }
+
+            // draw the outer circle going inward
+            drawCircle(ctx, centerX, centerY, circleRadius,     "blue");
+            drawCircle(ctx, centerX, centerY, circleRadius-50,  "green");
+            drawCircle(ctx, centerX, centerY, circleRadius-100, "red");
+
+            writeText (ctx, 160, 50, "The Canvas Project")
+        }
+    </script>
+</HEAD>
+
+<body>
+    <div class="center">
+        <canvas id="canvas" width="600" height="500" class="canvas-border"></canvas>
+    </div>
+</body>
+
+</html>
+
