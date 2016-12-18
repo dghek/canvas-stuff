@@ -4,19 +4,16 @@
 <HEAD>
     <meta charset="UTF-8">
     <link rel='stylesheet' type='text/css' href='app.css'/>
-    
-    
-    
+    <script type="text/javascript" src="jquery-2.2.3.js"></script>
 
     <script type="text/javascript">
-        function placeDot(ctx, centerX, centerY, radius)  {
+        function placeDot(ctx, centerX, centerY, radius, color)  {
             ctx.beginPath();
-            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
-            ctx.fillStyle = 'blue';
+            //ctx.arc(centerX, centerY,  radius, 0, (Math.PI / 180) * 360, false);
+            ctx.arc(centerX, centerY,  radius, 0, (Math.PI *2), false);
+            ctx.fillStyle = color;
+            ctx.closePath();
             ctx.fill();
-            ctx.lineWidth =10;
-            ctx.strokeStyle = 'blue';
-            ctx.stroke();
         }
 
         function drawLine (ctx, fromX, fromY, toX, toY)  {
@@ -32,13 +29,49 @@
             ctx.beginPath();
             ctx.arc(centerX, centerY, circleRadius, 0, (2 * Math.PI),false);
             ctx.strokeStyle = color;
+            ctx.setLineDash([5,5,2,2]);
             ctx.stroke();
         }
+
         function writeText (ctx, x, y, text) {
             ctx.font = "30px Comic Sans MS";
             ctx.fillStyle = '#FF00FF';
             ctx.fillText(text,x, y);
         }
+
+        function registerMouseClick (canvas) {
+            canvas.addEventListener('mousedown', function (evt){
+                console.info(evt);
+                var rect = canvas.getBoundingClientRect();
+                var x =  Math.round(evt.clientX - rect.left);
+                var y =  Math.round(evt.clientY - rect.top) ;
+                placeDot(canvas.getContext('2d'), x, y, 10, 'red');
+            })
+        }
+
+        function registerContextMenu (canvas) {
+            canvas.oncontextmenu = function(evt) {
+                console.log('right click menu')
+                console.info(evt)
+            }
+        }
+
+        function registerMouseHoover (canvas) {
+            canvas.onmousemove = function(e) {
+                var data= canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data;
+                var rect = canvas.getBoundingClientRect();
+                var mouseX =  Math.round(e.clientX - rect.left);
+                var mouseY =  Math.round(e.clientY - rect.top) ;
+                var isHit= data[(mouseY * canvas.width + mouseX)*4+3]>20;
+
+                if(isHit){
+                    $("#hit").text("Hoover");
+                }else{
+                    $("#hit").text("...");
+                }
+            }
+        }
+
     </script>
 
     <script type="text/javascript">
@@ -47,9 +80,18 @@
             var ctx = canvas.getContext('2d');
             var centerX = canvas.width / 2;
             var centerY = canvas.height / 2;
-            var dotRadius = 3;
+            var dotRadius = 9;
             var numOfDots = 8;
             var circleRadius = 150;
+            // globally disable the right click context
+            // we handle this in the canvas
+            document.addEventListener('contextmenu',function(event, targetDomEl){
+                event.preventDefault();
+            });
+
+            registerContextMenu(canvas);
+            registerMouseClick(canvas);
+            registerMouseHoover(canvas);
 
             // show the center dot
             placeDot(ctx, centerX, centerY, dotRadius);
@@ -58,13 +100,13 @@
             for(var i = 0; i < numOfDots; i++) {
                 var x = Math.round(centerX + circleRadius * Math.cos(2 * Math.PI * i / numOfDots));
                 var y = Math.round(centerY + circleRadius * Math.sin(2 * Math.PI * i / numOfDots));
-                placeDot(ctx, x, y, dotRadius);
+                placeDot(ctx, x, y, dotRadius, 'blue');
                 drawLine(ctx, centerX, centerY, x, y);
             }
 
             // draw the outer circle going inward
-            drawCircle(ctx, centerX, centerY, circleRadius,     "blue");
-            drawCircle(ctx, centerX, centerY, circleRadius-50,  "green");
+            drawCircle(ctx, centerX, centerY, circleRadius,     "orange");
+            drawCircle(ctx, centerX, centerY, circleRadius-50,  "black");
             drawCircle(ctx, centerX, centerY, circleRadius-100, "red");
 
             writeText (ctx, 160, 50, "The Canvas Project")
@@ -74,6 +116,7 @@
 
 <body>
     <div class="center">
+        <h2 id="hit">Move mouse across lines.</h2>
         <canvas id="canvas" width="600" height="500" class="canvas-border"></canvas>
     </div>
 </body>
